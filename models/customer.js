@@ -20,7 +20,7 @@ class Customer {
 
   static async all() {
     const results = await db.query(
-          `SELECT id,
+      `SELECT id,
                   first_name AS "firstName",
                   last_name  AS "lastName",
                   phone,
@@ -31,18 +31,52 @@ class Customer {
     return results.rows.map(c => new Customer(c));
   }
 
+  /** find a customer by name. */
+
+  static async getByName(name) {
+
+    name = name.split(" ");
+    let results = null;
+
+    if (name.length === 1) {
+      results = await db.query(
+        `SELECT id,
+          first_name AS "firstName",
+          last_name  AS "lastName",
+          phone,
+          notes
+          FROM customers
+          WHERE first_name ILIKE $1 OR last_name ILIKE $1
+          ORDER BY last_name, first_name`
+        , [...name]);
+    } else {
+      results = await db.query(
+        `SELECT id,
+        first_name AS "firstName",
+        last_name  AS "lastName",
+        phone,
+        notes
+        FROM customers
+        WHERE first_name ILIKE $1 AND last_name ILIKE $2
+        ORDER BY last_name, first_name`
+        , [...name]);
+    }
+
+    return results.rows.map(c => new Customer(c));
+  }
+
   /** get a customer by ID. */
 
   static async get(id) {
     const results = await db.query(
-          `SELECT id,
+      `SELECT id,
                   first_name AS "firstName",
                   last_name  AS "lastName",
                   phone,
                   notes
            FROM customers
            WHERE id = $1`,
-        [id],
+      [id],
     );
 
     const customer = results.rows[0];
@@ -61,37 +95,50 @@ class Customer {
   async getReservations() {
     return await Reservation.getReservationsForCustomer(this.id);
   }
+  
+  /**  */
+  
+  static async getMostReservations() {
+    // An inefficent but exciting solution
+    //
+    // let results = await Reservation.getCustomersWithMostReservations();
+    // let customers = results.map(async c => await Customer.get(c))
+    // customers = await Promise.all(customers);
+    
+    
+    return customers;
+  }
 
   /** save this customer. */
 
   async save() {
     if (this.id === undefined) {
       const result = await db.query(
-            `INSERT INTO customers (first_name, last_name, phone, notes)
+        `INSERT INTO customers (first_name, last_name, phone, notes)
              VALUES ($1, $2, $3, $4)
              RETURNING id`,
-          [this.firstName, this.lastName, this.phone, this.notes],
+        [this.firstName, this.lastName, this.phone, this.notes],
       );
       this.id = result.rows[0].id;
     } else {
       await db.query(
-            `UPDATE customers
+        `UPDATE customers
              SET first_name=$1,
                  last_name=$2,
                  phone=$3,
                  notes=$4
              WHERE id = $5`, [
-            this.firstName,
-            this.lastName,
-            this.phone,
-            this.notes,
-            this.id,
-          ],
+        this.firstName,
+        this.lastName,
+        this.phone,
+        this.notes,
+        this.id,
+      ],
       );
     }
   }
 
-  getFullName(){
+  getFullName() {
     return `${this.firstName} ${this.lastName}`;
   }
 }
