@@ -35,33 +35,18 @@ class Customer {
 
   static async getByName(name) {
 
-    name = name.split(" ");
-    let results = null;
 
-    if (name.length === 1) {
-      results = await db.query(
+    const results = await db.query(
         `SELECT id,
           first_name AS "firstName",
           last_name  AS "lastName",
           phone,
           notes
           FROM customers
-          WHERE first_name ILIKE $1 OR last_name ILIKE $1
+          WHERE concat(first_name,' ',last_name) ILIKE $1
           ORDER BY last_name, first_name`
-        , [...name]);
-    } else {
-      results = await db.query(
-        `SELECT id,
-        first_name AS "firstName",
-        last_name  AS "lastName",
-        phone,
-        notes
-        FROM customers
-        WHERE first_name ILIKE $1 AND last_name ILIKE $2
-        ORDER BY last_name, first_name`
-        , [...name]);
-    }
-
+        , [`%${name}%`]);
+    
     return results.rows.map(c => new Customer(c));
   }
 
