@@ -39,6 +39,19 @@ class Reservation {
 
     return results.rows.map(row => new Reservation(row));
   }
+  
+  static async getCustomersWithMostReservations(num = 10) {
+    
+    const results = await db.query(
+      `SELECT customer_id AS "customerId"
+      FROM reservations
+      GROUP BY customer_id
+      ORDER BY COUNT(customer_id) DESC 
+      LIMIT $1
+      `, [num]);
+  
+    return results.rows.map(res => res.customerId)
+  }
 
   static async get(reservationId) {
     let results = await db.query(
