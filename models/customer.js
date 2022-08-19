@@ -95,18 +95,30 @@ class Customer {
   async getReservations() {
     return await Reservation.getReservationsForCustomer(this.id);
   }
-  
-  /**  */
-  
-  static async getMostReservations() {
+
+  /**  Get top 10 customers with most reservations*/
+
+  static async getMostReservations(num = 10) {
     // An inefficent but exciting solution
     //
     // let results = await Reservation.getCustomersWithMostReservations();
     // let customers = results.map(async c => await Customer.get(c))
     // customers = await Promise.all(customers);
-    
-    
-    return customers;
+
+    const results = await db.query(`
+      SELECT c.id, c.first_name AS "firstName", 
+              c.last_name AS "lastName",
+              c.phone, 
+              c.notes
+        FROM customers AS c
+        JOIN reservations AS r
+        ON c.id = r.customer_id
+        GROUP BY r.customer_id, c.id, c.first_name, c.last_name, c.phone, c.notes
+        ORDER BY COUNT(r.customer_id) DESC 
+        LIMIT $1;`
+      , [num]);
+
+    return results.rows.map(c => new Customer(c));
   }
 
   /** save this customer. */
@@ -137,7 +149,7 @@ class Customer {
       );
     }
   }
-
+/**returns customer's full name */
   getFullName() {
     return `${this.firstName} ${this.lastName}`;
   }

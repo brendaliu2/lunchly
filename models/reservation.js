@@ -40,19 +40,21 @@ class Reservation {
     return results.rows.map(row => new Reservation(row));
   }
   
-  static async getCustomersWithMostReservations(num = 10) {
+  /** Gets top 10 customer ids with most reservations. */
+  // static async getCustomersWithMostReservations(num = 10) {
     
-    const results = await db.query(
-      `SELECT customer_id AS "customerId"
-      FROM reservations
-      GROUP BY customer_id
-      ORDER BY COUNT(customer_id) DESC 
-      LIMIT $1
-      `, [num]);
+  //   const results = await db.query(
+  //     `SELECT customer_id AS "customerId"
+  //     FROM reservations
+  //     GROUP BY customer_id
+  //     ORDER BY COUNT(customer_id) DESC 
+  //     LIMIT $1
+  //     `, [num]);
   
-    return results.rows.map(res => res.customerId)
-  }
+  //   return results.rows.map(res => res.customerId)
+  // }
 
+  /** Given a reservation id, returns reservation instance */
   static async get(reservationId) {
     let results = await db.query(
       `SELECT id,
@@ -67,7 +69,7 @@ class Reservation {
       results = results.rows.map(row => new Reservation(row));
       return results[0];
   }
-
+/**Updates an existing reservation. Or make a new one if non-existent */
   async save() {
     if (this.id === undefined) {
       const result = await db.query(
