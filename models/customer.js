@@ -135,7 +135,7 @@ class Customer {
     }
   }
 /**returns customer's full name */
-  getFullName() {
+  get FullName() {
     return `${this.firstName} ${this.lastName}`;
   }
 }

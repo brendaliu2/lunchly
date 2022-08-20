@@ -6,6 +6,8 @@ const moment = require("moment");
 
 const db = require("../db");
 
+const { BadRequestError } = require('../expressError')
+
 /** A reservation for a party */
 
 class Reservation {
@@ -16,6 +18,7 @@ class Reservation {
     this.startAt = startAt;
     this.notes = notes;
   }
+  
 
   /** formatter for startAt */
 
@@ -94,6 +97,20 @@ class Reservation {
         this.id,
       ],
       );
+    }
+  }
+  
+  get numGuests(){
+    return this._numGuests;
+  }
+  
+  
+  /**Set numGuests */
+  set numGuests(num){
+    if(num <= 0){
+      throw new BadRequestError('Guests cannot be negative or zero!')
+    } else {
+      this._numGuests = num;
     }
   }
 }
